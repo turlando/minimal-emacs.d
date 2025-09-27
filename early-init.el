@@ -99,59 +99,6 @@ modified during setup.")
 (defvar minimal-emacs-dired-group-directories-first nil
   "If non-nil, group directories first in Dired listings.")
 
-;;; Load pre-early-init.el
-
-;; Prefer loading newer compiled files
-(setq load-prefer-newer t)
-(setq debug-on-error minimal-emacs-debug)
-
-(defvar minimal-emacs--success nil)
-(defun minimal-emacs--check-success ()
-  "Verify that the Emacs configuration has loaded successfully."
-  (unless minimal-emacs--success
-    (cond
-     ((or (file-exists-p (expand-file-name "~/.emacs.el"))
-          (file-exists-p (expand-file-name "~/.emacs")))
-      (error "Emacs ignored loading 'init.el'. Please ensure that files such as ~/.emacs or ~/.emacs.el do not exist, as they may be preventing Emacs from loading the 'init.el' file"))
-
-     (t
-      (error "Configuration error. Debug by starting Emacs with: emacs --debug-init")))))
-(add-hook 'emacs-startup-hook #'minimal-emacs--check-success 102)
-
-(defvar minimal-emacs-load-compiled-init-files nil
-  "If non-nil, attempt to load byte-compiled .elc for init files.
-This will enable minimal-emacs to load byte-compiled or possibly native-compiled
-init files for the following initialization files: pre-init.el, post-init.el,
-pre-early-init.el, and post-early-init.el.")
-
-(defun minimal-emacs--remove-el-file-suffix (filename)
-  "Remove the Elisp file suffix from FILENAME and return it (.el, .el.gz...)."
-  (let ((suffixes (mapcar (lambda (ext) (concat ".el" ext))
-                          load-file-rep-suffixes)))
-    (catch 'done
-      (dolist (suffix suffixes filename)
-        (when (string-suffix-p suffix filename)
-          (setq filename (substring filename 0 (- (length suffix))))
-          (throw 'done t))))
-    filename))
-
-(defun minimal-emacs-load-user-init (filename)
-  "Execute a file of Lisp code named FILENAME."
-  (let ((init-file (expand-file-name filename
-                                     minimal-emacs-user-directory)))
-    (if (not minimal-emacs-load-compiled-init-files)
-        (load init-file :no-error :no-message :nosuffix)
-      ;; Remove the file suffix (.el, .el.gz, etc.) to let the `load' function
-      ;; select between .el and .elc files.
-      (setq init-file (minimal-emacs--remove-el-file-suffix init-file))
-      (load init-file :no-error :no-message))))
-
-(minimal-emacs-load-user-init "pre-early-init.el")
-
-(setq custom-theme-directory
-      (expand-file-name "themes/" minimal-emacs-user-directory))
-(setq custom-file (expand-file-name "custom.el" minimal-emacs-user-directory))
-
 ;;; Garbage collection
 ;; Garbage collection significantly affects startup times. This setting delays
 ;; garbage collection during startup but will be reset later.
@@ -459,19 +406,9 @@ this stage of initialization."
 (setq use-package-minimum-reported-time (if minimal-emacs-debug 0 0.1))
 (setq use-package-verbose minimal-emacs-debug)
 (setq package-enable-at-startup nil)  ; Let the init.el file handle this
-(setq use-package-always-ensure t)
 (setq use-package-enable-imenu-support t)
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("gnu" . "https://elpa.gnu.org/packages/")
-                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
-(setq package-archive-priorities '(("gnu"    . 99)
-                                   ("nongnu" . 80)
-                                   ("melpa"  . 70)))
 
-;;; Load post-early-init.el
-(minimal-emacs-load-user-init "post-early-init.el")
-
-(provide 'early-init)
+(provide 'minimal-early-init)
 
 ;; Local variables:
 ;; byte-compile-warnings: (not obsolete free-vars)

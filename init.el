@@ -21,11 +21,6 @@
 
 ;;; Code:
 
-;;; Load pre-init.el
-(if (fboundp 'minimal-emacs-load-user-init)
-    (minimal-emacs-load-user-init "pre-init.el")
-  (error "The early-init.el file failed to loaded"))
-
 ;;; Before package
 
 ;; Ask the user whether to terminate asynchronous compilations on exit.
@@ -48,20 +43,6 @@
 (setq undo-limit (* 13 160000)
       undo-strong-limit (* 13 240000)
       undo-outer-limit (* 13 24000000))
-
-;;; package.el
-
-(when (bound-and-true-p minimal-emacs-package-initialize-and-refresh)
-  ;; Initialize and refresh package contents again if needed
-  (package-initialize)
-  ;; Install use-package if necessary
-  (unless (package-installed-p 'use-package)
-    (unless (seq-empty-p package-archive-contents)
-      (package-refresh-contents))
-    (package-install 'use-package))
-
-  ;; Ensure use-package is available
-  (require 'use-package))
 
 ;;; Minibuffer
 
@@ -564,12 +545,7 @@
                            dired-find-alternate-file))
   (put cmd 'disabled nil))
 
-;;; Load post init
-(when (fboundp 'minimal-emacs-load-user-init)
-  (minimal-emacs-load-user-init "post-init.el"))
-(setq minimal-emacs--success t)
-
-(provide 'init)
+(provide 'minimal-init)
 
 ;; Local variables:
 ;; byte-compile-warnings: (not obsolete free-vars)
