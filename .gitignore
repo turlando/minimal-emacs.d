@@ -4,3 +4,7 @@
 !init.el
 !.github/
 !.LICENSE
+!default.nix
+!overlay.nix
+!flake.nix
+!flake.lock
